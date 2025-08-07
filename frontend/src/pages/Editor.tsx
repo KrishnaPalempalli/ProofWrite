@@ -14,6 +14,11 @@ interface DocumentResponse {
   history: DocumentHistory[];
 }
 
+interface SaveResponse {
+  message: string;
+  cid: string;
+}
+
 const Editor = () => {
   const { id: name } = useParams();
   const isNewDocument = name === "new";
@@ -25,6 +30,7 @@ const Editor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(!isNewDocument);
+  const [lastSavedContent, setLastSavedContent] = useState("");
 
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -52,14 +58,17 @@ const Editor = () => {
           const latestVersion = data.history[data.history.length - 1];
           setContent(latestVersion.text);
           setTitle(name || "Untitled Document");
+          setLastSavedContent(latestVersion.text);
         } else {
           setContent("");
           setTitle(name || "Untitled Document");
+          setLastSavedContent("");
         }
       } else if (response.status === 404) {
         // Document doesn't exist, create a new one with this title
         setTitle(name || "Untitled Document");
         setContent("");
+        setLastSavedContent("");
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -69,6 +78,7 @@ const Editor = () => {
       // On error, still create a new document with the title
       setTitle(name || "Untitled Document");
       setContent("");
+      setLastSavedContent("");
     } finally {
       setIsLoading(false);
     }
@@ -93,9 +103,10 @@ const Editor = () => {
     setCharacterCount(content.length);
   }, [content]);
 
-  // Auto-save simulation
+  // Auto-save every 10 seconds if content has changed
   useEffect(() => {
-    if (content.trim() || title.trim()) {
+    // Only auto-save if content has actually changed since last save
+    if (content !== lastSavedContent) {
       // Clear existing timeout
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -103,7 +114,7 @@ const Editor = () => {
 
       // Set new timeout for 10 seconds
       saveTimeoutRef.current = setTimeout(() => {
-        saveDocument();
+        saveDocument(false); // Auto-save
       }, 10000);
     }
 
@@ -112,17 +123,45 @@ const Editor = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [content, title]);
+  }, [content, lastSavedContent]);
 
-  const saveDocument = async () => {
+  const saveDocument = async (isManualSave = false) => {
+    // Don't save if content hasn't changed
+    if (content === lastSavedContent) {
+      return;
+    }
+
     setIsSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setLastSaved(new Date());
-      toast.success("Document saved");
+      const response = await fetch("http://localhost:7474/api/doc/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: title || "Untitled Document",
+          text: content,
+        }),
+      });
+
+      if (response.ok) {
+        const data: SaveResponse = await response.json();
+        setLastSaved(new Date());
+        setLastSavedContent(content);
+        // Only show success toast for manual saves
+        if (isManualSave) {
+          toast.success("Document saved successfully");
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to save document");
+      }
     } catch (error) {
-      toast.error("Failed to save document");
+      console.error("Error saving document:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save document"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -132,7 +171,7 @@ const Editor = () => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    saveDocument();
+    saveDocument(true); // Manual save
   };
 
   const formatDate = (date: Date) => {
