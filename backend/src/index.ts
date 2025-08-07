@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 app.use(express.json())
 
 // Add endpoints
-import { router as apiRouter } from './routes/api'
+import { router as apiRouter } from './api'
 app.use('/api', apiRouter)
 
 const init = async () => {
