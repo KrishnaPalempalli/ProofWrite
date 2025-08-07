@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchAdminEssays, Document, IPFSVersion } from "@/lib/api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,106 +8,114 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, FileText, Shield, Eye, Calendar, Hash, Clock, User } from "lucide-react";
 
-interface IPFSVersion {
-  cid: string;
-  timestamp: string;
-  wordCount: number;
-  characters: number;
-  size: string;
-  content: string;
-}
+// interface IPFSVersion {
+//   cid: string;
+//   timestamp: string;
+//   wordCount: number;
+//   characters: number;
+//   size: string;
+//   content: string;
+// }
 
-interface Document {
-  id: string;
-  title: string;
-  createdAt: string;
-  lastModified: string;
-  totalVersions: number;
-  currentWordCount: number;
-  status: "verified" | "flagged" | "pending";
-  versions: IPFSVersion[];
-}
+// interface Document {
+//   id: string;
+//   title: string;
+//   createdAt: string;
+//   lastModified: string;
+//   totalVersions: number;
+//   currentWordCount: number;
+//   status: "verified" | "flagged" | "pending";
+//   versions: IPFSVersion[];
+// }
 
 const Admin = () => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<IPFSVersion | null>(null);
 
+  const { data: documents = [], isLoading, error } = useQuery({
+    queryKey: ["admin-essays"],
+    queryFn: fetchAdminEssays,
+  });
+
+  if (isLoading) return <div className="p-4">Loading essays...</div>;
+  if (error) return <div className="p-4 text-red-500">Failed to load essays</div>;
+
   // Mock data for a single student's essays
-  const documents: Document[] = [
-    {
-      id: "1",
-      title: "Essay on Climate Change Policy",
-      createdAt: "2024-01-10T09:00:00Z",
-      lastModified: "2024-01-15T14:30:00Z",
-      totalVersions: 23,
-      currentWordCount: 1847,
-      status: "verified",
-      versions: [
-        {
-          cid: "QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
-          timestamp: "2024-01-15T14:30:00Z",
-          wordCount: 1847,
-          characters: 11234,
-          size: "11.2 KB",
-          content: "Climate change represents one of the most pressing challenges of our time, requiring immediate and comprehensive policy responses from governments worldwide..."
-        },
-        {
-          cid: "QmPjCxKPNRzv8HvUJQMpzLxEzBqkCa7MRnEp4XyYwZ123A",
-          timestamp: "2024-01-15T14:15:00Z", 
-          wordCount: 1789,
-          characters: 10876,
-          size: "10.9 KB",
-          content: "Climate change represents one of the most pressing challenges of our time, requiring immediate policy responses from governments..."
-        },
-        {
-          cid: "QmRsKwPvHxCzNrB8QJqGkE4vTmWzYpDhSxMcFn2L9Gy45B",
-          timestamp: "2024-01-15T14:00:00Z",
-          wordCount: 1654,
-          characters: 10234,
-          size: "10.2 KB", 
-          content: "Climate change represents one of the most pressing challenges of our time..."
-        }
-      ]
-    },
-    {
-      id: "2",
-      title: "Analysis of Modern Literature", 
-      createdAt: "2024-01-08T11:15:00Z",
-      lastModified: "2024-01-14T16:45:00Z",
-      totalVersions: 31,
-      currentWordCount: 2156,
-      status: "flagged",
-      versions: [
-        {
-          cid: "QmTnVpBx7KzqA9rWxMvJpDhEyUc2XzRfGsLwNm8Qv3PoY",
-          timestamp: "2024-01-14T16:45:00Z",
-          wordCount: 2156,
-          characters: 13245,
-          size: "13.2 KB",
-          content: "Modern literature has undergone significant transformations in the 21st century, reflecting changing social dynamics and technological influences..."
-        }
-      ]
-    },
-    {
-      id: "3", 
-      title: "Historical Perspectives on Democracy",
-      createdAt: "2024-01-12T13:30:00Z",
-      lastModified: "2024-01-13T10:20:00Z",
-      totalVersions: 12,
-      currentWordCount: 892,
-      status: "pending",
-      versions: [
-        {
-          cid: "QmKrWpVx9MzLa8BcTjQvYuEhNdFm3RsGp7ZwXx5KlN2Mq",
-          timestamp: "2024-01-13T10:20:00Z",
-          wordCount: 892,
-          characters: 5456,
-          size: "5.5 KB",
-          content: "Democracy, as a form of government, has evolved significantly throughout history, adapting to various cultural and social contexts..."
-        }
-      ]
-    }
-  ];
+  // const documents: Document[] = [
+  //   {
+  //     id: "1",
+  //     title: "Essay on Climate Change Policy",
+  //     createdAt: "2024-01-10T09:00:00Z",
+  //     lastModified: "2024-01-15T14:30:00Z",
+  //     totalVersions: 23,
+  //     currentWordCount: 1847,
+  //     status: "verified",
+  //     versions: [
+  //       {
+  //         cid: "QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
+  //         timestamp: "2024-01-15T14:30:00Z",
+  //         wordCount: 1847,
+  //         characters: 11234,
+  //         size: "11.2 KB",
+  //         content: "Climate change represents one of the most pressing challenges of our time, requiring immediate and comprehensive policy responses from governments worldwide..."
+  //       },
+  //       {
+  //         cid: "QmPjCxKPNRzv8HvUJQMpzLxEzBqkCa7MRnEp4XyYwZ123A",
+  //         timestamp: "2024-01-15T14:15:00Z", 
+  //         wordCount: 1789,
+  //         characters: 10876,
+  //         size: "10.9 KB",
+  //         content: "Climate change represents one of the most pressing challenges of our time, requiring immediate policy responses from governments..."
+  //       },
+  //       {
+  //         cid: "QmRsKwPvHxCzNrB8QJqGkE4vTmWzYpDhSxMcFn2L9Gy45B",
+  //         timestamp: "2024-01-15T14:00:00Z",
+  //         wordCount: 1654,
+  //         characters: 10234,
+  //         size: "10.2 KB", 
+  //         content: "Climate change represents one of the most pressing challenges of our time..."
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Analysis of Modern Literature", 
+  //     createdAt: "2024-01-08T11:15:00Z",
+  //     lastModified: "2024-01-14T16:45:00Z",
+  //     totalVersions: 31,
+  //     currentWordCount: 2156,
+  //     status: "flagged",
+  //     versions: [
+  //       {
+  //         cid: "QmTnVpBx7KzqA9rWxMvJpDhEyUc2XzRfGsLwNm8Qv3PoY",
+  //         timestamp: "2024-01-14T16:45:00Z",
+  //         wordCount: 2156,
+  //         characters: 13245,
+  //         size: "13.2 KB",
+  //         content: "Modern literature has undergone significant transformations in the 21st century, reflecting changing social dynamics and technological influences..."
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     id: "3", 
+  //     title: "Historical Perspectives on Democracy",
+  //     createdAt: "2024-01-12T13:30:00Z",
+  //     lastModified: "2024-01-13T10:20:00Z",
+  //     totalVersions: 12,
+  //     currentWordCount: 892,
+  //     status: "pending",
+  //     versions: [
+  //       {
+  //         cid: "QmKrWpVx9MzLa8BcTjQvYuEhNdFm3RsGp7ZwXx5KlN2Mq",
+  //         timestamp: "2024-01-13T10:20:00Z",
+  //         wordCount: 892,
+  //         characters: 5456,
+  //         size: "5.5 KB",
+  //         content: "Democracy, as a form of government, has evolved significantly throughout history, adapting to various cultural and social contexts..."
+  //       }
+  //     ]
+  //   }
+  // ];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -121,7 +131,7 @@ const Admin = () => {
     const now = new Date();
     const date = new Date(dateString);
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
@@ -144,7 +154,7 @@ const Admin = () => {
               <p className="text-muted-foreground">Student Essay Verification History</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="w-3 h-3" />
@@ -170,7 +180,7 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-border shadow-card">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -219,12 +229,12 @@ const Admin = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{doc.title}</CardTitle>
-                  <Badge 
+                  <Badge
                     variant={doc.status === 'verified' ? 'default' : 'secondary'}
                     className={
                       doc.status === 'verified' ? 'bg-green-500 text-white' :
-                      doc.status === 'flagged' ? 'bg-red-500 text-white' :
-                      'bg-yellow-500 text-black'
+                        doc.status === 'flagged' ? 'bg-red-500 text-white' :
+                          'bg-yellow-500 text-black'
                     }
                   >
                     {doc.status}
@@ -249,9 +259,9 @@ const Admin = () => {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={() => setSelectedDocument(doc)}
-                  variant="outline" 
+                  variant="outline"
                   className="w-full"
                 >
                   <Eye className="w-4 h-4 mr-2" />
@@ -272,7 +282,7 @@ const Admin = () => {
                   {selectedDocument.title} - Version History
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 {selectedDocument.versions.map((version, index) => (
                   <Card key={version.cid} className="border-border">
@@ -309,8 +319,8 @@ const Admin = () => {
                         </div>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => setSelectedVersion(version)}
                             >
