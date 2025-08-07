@@ -18,7 +18,7 @@ const pinata = new PinataSDK({
 const router = Router()
 
 router.get('/hello', async (req: Request, res: Response) => {
-  res.send('Hello World!')
+  res.send(`Hello World!<br>${JSON.stringify(app.locals.data)}`)
 })
 
 router.post('/doc/upload', async (req: Request, res: Response) => {
@@ -31,13 +31,14 @@ router.post('/doc/upload', async (req: Request, res: Response) => {
     try {
       const upload = await pinata.upload.private.file(file)
       const cid = upload.cid
-      const data = app.locals.data
-      if (!data[name]) {
-        data[name] = []
+      if (!app.locals.data[name]) {
+        app.locals.data[name] = []
       }
       const commit: DocumentCommit = { text, timestamp, cid }
-      data[name].push(commit)
-      console.log(`uploaded file ${name} at ${timestamp}`, data)
+      if (!('is_duplicate' in upload && upload.is_duplicate)) {
+        app.locals.data[name].push(commit)
+      }
+      console.log(`uploaded file ${name} at ${timestamp}`, app.locals.data[name])
       res.status(200).send({
         message: 'successfully uploaded',
         cid,
