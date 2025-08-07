@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   FileText,
   Plus,
@@ -35,6 +42,9 @@ const Dashboard = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newDocumentTitle, setNewDocumentTitle] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -98,6 +108,24 @@ const Dashboard = () => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const handleCreateDocument = () => {
+    if (newDocumentTitle.trim()) {
+      setIsModalOpen(false);
+      setNewDocumentTitle("");
+      navigate(`/editor/${encodeURIComponent(newDocumentTitle.trim())}`);
+    }
+  };
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+    setNewDocumentTitle("");
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setNewDocumentTitle("");
   };
 
   if (loading) {
@@ -169,12 +197,13 @@ const Dashboard = () => {
               <List className="w-4 h-4" />
             </Button>
           </div>
-          <Link to="/editor/new">
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              New Document
-            </Button>
-          </Link>
+          <Button
+            className="bg-primary hover:bg-primary/90"
+            onClick={handleModalOpen}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Document
+          </Button>
         </div>
 
         {/* Documents */}
@@ -228,12 +257,10 @@ const Dashboard = () => {
             <p className="text-muted-foreground mb-6">
               Create your first document to get started.
             </p>
-            <Link to="/editor/new">
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                New Document
-              </Button>
-            </Link>
+            <Button onClick={handleModalOpen}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Document
+            </Button>
           </div>
         )}
 
@@ -248,6 +275,45 @@ const Dashboard = () => {
             </p>
           </div>
         )}
+
+        {/* New Document Modal */}
+        <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Document</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="document-title" className="text-sm font-medium">
+                  Document Title
+                </label>
+                <Input
+                  id="document-title"
+                  placeholder="Enter document title..."
+                  value={newDocumentTitle}
+                  onChange={(e) => setNewDocumentTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleCreateDocument();
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleModalClose}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateDocument}
+                disabled={!newDocumentTitle.trim()}
+              >
+                Create Document
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
