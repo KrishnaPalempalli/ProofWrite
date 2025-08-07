@@ -62,14 +62,14 @@ export async function fetchAdminEssays(): Promise<Document[]> {
       // Determine status
       let status: "pending" | "flagged" | "verified" = "verified";
 
-      if (currentWordCount < 50) {
+      if (currentWordCount < 100) {
         status = "pending";
-      } else if (firstVersionWords > 100) {
+      } else if (firstVersionWords > 200) {
         status = "flagged";
       } else {
         for (let i = 1; i < wordCounts.length; i++) {
           const delta = Math.abs(wordCounts[i] - wordCounts[i - 1]);
-          if (delta >= 100) {
+          if (delta >= 500) {
             status = "flagged";
             break;
           }
