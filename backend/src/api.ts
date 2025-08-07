@@ -9,6 +9,7 @@ type DocumentSnapshot = {
   text: string
   timestamp: number // unix ms
   cid: string
+  id: string // pinata API file ID
 }
 
 config()
@@ -56,14 +57,20 @@ router.post('/doc/upload', async (req: Request, res: Response) => {
   const file = new File([text], `HACKATHON ${name}`, { type: 'text/plain' })
 
   try {
-    const upload = await pinata.upload.private.file(file)
-    const cid = upload.cid
-
     if (!app.locals.data[name]) {
       app.locals.data[name] = []
     }
 
-    const snapshot: DocumentSnapshot = { text, timestamp, cid }
+    const fileVersion = app.locals.data[name].length + 1
+    const previousId = fileVersion > 1 ? app.locals.data[name][fileVersion - 2].id : 'N/A'
+    const upload = await pinata.upload.private.file(file).keyvalues({
+      version: String(fileVersion),
+      previousId,
+    })
+    const cid = upload.cid
+    const id = upload.id
+
+    const snapshot: DocumentSnapshot = { text, timestamp, cid, id }
 
     console.log(upload)
     app.locals.data[name].push(snapshot)
