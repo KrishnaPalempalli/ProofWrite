@@ -30,14 +30,11 @@ router.get('/hello', async (req: Request, res: Response) => {
 
 router.get('/doc', async (req: Request, res: Response) => {
   if (!('name' in req.query)) {
-    return res.status(400).json({
-      message: 'bad request, fix your parameters dingus',
-    })
+    return res.status(200).json(app.locals.data)
   }
   const name = req.query.name as string
   if (name in app.locals.data) {
     res.status(200).json({
-      message: 'successfully retrieved file history',
       history: app.locals.data[name],
     })
   } else {
