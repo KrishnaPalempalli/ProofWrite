@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import { SAVE_TIMEOUT } from "@/lib/utils";
 
 interface DocumentHistory {
   text: string;
@@ -115,7 +116,7 @@ const Editor = () => {
       // Set new timeout for 10 seconds
       saveTimeoutRef.current = setTimeout(() => {
         saveDocument(false); // Auto-save
-      }, 10000);
+      }, SAVE_TIMEOUT);
     }
 
     return () => {
