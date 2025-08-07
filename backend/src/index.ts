@@ -1,4 +1,5 @@
 import express from 'express'
+import fs from 'fs'
 
 const app = express()
 const port = 7474
@@ -19,11 +20,18 @@ app.use((req, res, next) => {
 app.use(express.json())
 
 // Add endpoints
-import { router as apiRouter } from './api'
+import { router as apiRouter, DB_PATH } from './api'
 app.use('/api', apiRouter)
 
 const init = async () => {
-  app.locals.data = {} // this will store all user data in-memory cuz I don't wanna use a database lol
+  try {
+    const raw = fs.readFileSync(DB_PATH, 'utf-8')
+    app.locals.data = JSON.parse(raw)
+  } catch {
+    // if file doesn't exist or is invalid, start empty
+    app.locals.data = {}
+    fs.writeFileSync(DB_PATH, JSON.stringify(app.locals.data, null, 2))
+  }
   app.listen(port, () => {
     console.info('Express server listening on http://127.0.0.1:' + port)
   })
