@@ -1,58 +1,129 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Calendar, Search, Grid3X3, List, Settings } from "lucide-react";
+import {
+  FileText,
+  Plus,
+  Calendar,
+  Search,
+  Grid3X3,
+  List,
+  Settings,
+} from "lucide-react";
+
+interface DocumentVersion {
+  text: string;
+  timestamp: number;
+  cid: string;
+}
+
+interface ApiResponse {
+  [documentTitle: string]: DocumentVersion[];
+}
 
 interface Document {
-  id: string;
   title: string;
   lastModified: string;
   preview: string;
   createdAt: string;
+  latestVersion: DocumentVersion;
 }
 
 const Dashboard = () => {
-  const [documents] = useState<Document[]>([
-    {
-      id: "1",
-      title: "Essay on Climate Change Policy",
-      lastModified: "2024-01-15T14:30:00Z",
-      preview: "Climate change represents one of the most pressing challenges of our time...",
-      createdAt: "2024-01-10T09:00:00Z"
-    },
-    {
-      id: "2", 
-      title: "Analysis of Modern Literature",
-      lastModified: "2024-01-14T16:45:00Z",
-      preview: "Modern literature reflects the complexities of contemporary society...",
-      createdAt: "2024-01-08T11:15:00Z"
-    },
-    {
-      id: "3",
-      title: "Historical Perspectives on Democracy",
-      lastModified: "2024-01-13T10:20:00Z", 
-      preview: "Democracy has evolved significantly throughout history...",
-      createdAt: "2024-01-12T13:30:00Z"
-    }
-  ]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:7474/api/doc");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: ApiResponse = await response.json();
+
+        // Transform the API response to match our Document interface
+        const transformedDocuments: Document[] = Object.entries(data).map(
+          ([title, versions]) => {
+            // Sort versions by timestamp to get the latest
+            const sortedVersions = versions.sort(
+              (a, b) => b.timestamp - a.timestamp
+            );
+            const latestVersion = sortedVersions[0];
+            const oldestVersion = sortedVersions[sortedVersions.length - 1];
+
+            return {
+              title,
+              lastModified: new Date(latestVersion.timestamp).toISOString(),
+              createdAt: new Date(oldestVersion.timestamp).toISOString(),
+              preview:
+                latestVersion.text.substring(0, 100) +
+                (latestVersion.text.length > 100 ? "..." : ""),
+              latestVersion,
+            };
+          }
+        );
+
+        setDocuments(transformedDocuments);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch documents"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const filteredDocuments = documents.filter(doc => 
-    doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.preview.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDocuments = documents.filter(
+    (doc) =>
+      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.preview.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading documents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            Error loading documents
+          </h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,9 +178,18 @@ const Dashboard = () => {
         </div>
 
         {/* Documents */}
-        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-2"}>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+              : "space-y-2"
+          }
+        >
           {filteredDocuments.map((doc) => (
-            <Link key={doc.id} to={`/editor/${doc.id}`}>
+            <Link
+              key={doc.title}
+              to={`/editor/${encodeURIComponent(doc.title)}`}
+            >
               <Card className="hover:shadow-md transition-shadow cursor-pointer border border-border/50">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
@@ -142,7 +222,9 @@ const Dashboard = () => {
         {filteredDocuments.length === 0 && searchQuery === "" && (
           <div className="text-center py-16">
             <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No documents yet</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No documents yet
+            </h3>
             <p className="text-muted-foreground mb-6">
               Create your first document to get started.
             </p>
@@ -158,7 +240,9 @@ const Dashboard = () => {
         {filteredDocuments.length === 0 && searchQuery !== "" && (
           <div className="text-center py-16">
             <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No documents found</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No documents found
+            </h3>
             <p className="text-muted-foreground">
               No documents match your search for "{searchQuery}"
             </p>
