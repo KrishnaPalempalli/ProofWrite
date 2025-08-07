@@ -412,7 +412,7 @@ const Admin = () => {
                               </div>
                               <div className="prose max-w-none">
                                 <div className="p-4 bg-muted rounded-lg border">
-                                  <p className="text-foreground leading-relaxed">
+                                  <p className="text-foreground leading-relaxed whitespace-pre-wrap">
                                     {version.content}
                                   </p>
                                 </div>
