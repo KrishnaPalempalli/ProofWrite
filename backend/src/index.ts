@@ -1,5 +1,6 @@
 import express from 'express'
 import fs from 'fs'
+import cors from 'cors'
 
 const app = express()
 const port = 7474
@@ -18,6 +19,8 @@ app.use((req, res, next) => {
 
 // support for json requests
 app.use(express.json())
+// CORS, for frontend to be able to see responses
+app.use(cors())
 
 // Add endpoints
 import { router as apiRouter, DB_PATH } from './api'
