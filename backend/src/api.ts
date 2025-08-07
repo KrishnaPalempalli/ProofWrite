@@ -65,10 +65,9 @@ router.post('/doc/upload', async (req: Request, res: Response) => {
 
     const snapshot: DocumentSnapshot = { text, timestamp, cid }
 
-    if (!('is_duplicate' in upload && upload.is_duplicate)) {
-      app.locals.data[name].push(snapshot)
-      saveData()
-    }
+    console.log(upload)
+    app.locals.data[name].push(snapshot)
+    saveData()
 
     console.log(`uploaded file ${name} at ${timestamp}`, app.locals.data[name])
     res.status(200).send({
