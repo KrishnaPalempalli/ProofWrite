@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { Router } from 'express'
 import { app } from '..'
+import { config } from 'dotenv'
 
 type DocumentCommit = {
   text: string
@@ -8,6 +9,7 @@ type DocumentCommit = {
   cid: string
 }
 
+config()
 const router = Router()
 
 router.get('/hello', async (req: Request, res: Response) => {
