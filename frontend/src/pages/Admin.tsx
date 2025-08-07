@@ -37,6 +37,10 @@ const Admin = () => {
     queryFn: fetchAdminEssays,
   });
 
+  const totalEssays = documents.length;
+  const verifiedEssays = documents.filter((doc) => doc.status === "verified").length;
+  const verifiedPercentage = totalEssays > 0 ? Math.round((verifiedEssays / totalEssays) * 100) : 0;
+
   if (isLoading) return <div className="p-4">Loading essays...</div>;
   if (error) return <div className="p-4 text-red-500">Failed to load essays</div>;
 
@@ -214,7 +218,7 @@ const Admin = () => {
               <div className="flex items-center gap-2">
                 <Eye className="w-5 h-5 text-success" />
                 <div>
-                  <p className="text-lg font-semibold text-foreground">100%</p>
+                  <p className="text-lg font-semibold text-foreground">{verifiedPercentage}%</p>
                   <p className="text-xs text-muted-foreground">Verified</p>
                 </div>
               </div>

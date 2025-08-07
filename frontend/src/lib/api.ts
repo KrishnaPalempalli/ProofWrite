@@ -22,7 +22,7 @@ export interface Document {
 
 function computeMetadata(text: string): { wordCount: number; characters: number; size: string } {
   const characters = text.length;
-  const wordCount = text.trim().split(/\s+/).length;
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const size = (new Blob([text]).size / 1024).toFixed(1) + " KB";
   return { wordCount, characters, size };
 }
@@ -45,17 +45,38 @@ export async function fetchAdminEssays(): Promise<Document[]> {
       };
     });
 
-    parsedVersions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    parsedVersions.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    const wordCounts = parsedVersions.map(v => v.wordCount);
+    const currentWordCount = wordCounts.at(-1) || 0;
+    const firstVersionWords = wordCounts[0] || 0;
+
+    // Determine status
+    let status: "pending" | "flagged" | "verified" = "verified";
+
+    if (currentWordCount < 100) {
+      status = "pending";
+    } else if (firstVersionWords > 200) {
+      status = "flagged";
+    } else {
+      for (let i = 1; i < wordCounts.length; i++) {
+        const delta = Math.abs(wordCounts[i] - wordCounts[i - 1]);
+        if (delta >= 500) {
+          status = "flagged";
+          break;
+        }
+      }
+    }
 
     return {
       id: `${index + 1}`,
       title,
-      createdAt: parsedVersions[parsedVersions.length - 1].timestamp,
-      lastModified: parsedVersions[0].timestamp,
+      createdAt: parsedVersions[0].timestamp,
+      lastModified: parsedVersions.at(-1)?.timestamp || parsedVersions[0].timestamp,
       totalVersions: parsedVersions.length,
-      currentWordCount: parsedVersions[0].wordCount,
-      status: "pending", // can add dynamic logic later
-      versions: parsedVersions,
+      currentWordCount,
+      status,
+      versions: parsedVersions.reverse(), // reverse for latest version first in UI
     };
   });
 
