@@ -159,8 +159,8 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">DocCloud</h1>
-            <p className="text-muted-foreground">Manage your documents</p>
+            <h1 className="text-3xl font-bold text-foreground">ProofWrite</h1>
+            <p className="text-muted-foreground">Manage your essays</p>
           </div>
           <Link to="/admin">
             <Button variant="outline">

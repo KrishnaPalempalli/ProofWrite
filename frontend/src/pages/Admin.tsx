@@ -5,8 +5,23 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, FileText, Shield, Eye, Calendar, Hash, Clock, User } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  ArrowLeft,
+  FileText,
+  Shield,
+  Eye,
+  Calendar,
+  Hash,
+  Clock,
+  User,
+} from "lucide-react";
 
 // interface IPFSVersion {
 //   cid: string;
@@ -29,20 +44,32 @@ import { ArrowLeft, FileText, Shield, Eye, Calendar, Hash, Clock, User } from "l
 // }
 
 const Admin = () => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [selectedVersion, setSelectedVersion] = useState<IPFSVersion | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
+  const [selectedVersion, setSelectedVersion] = useState<IPFSVersion | null>(
+    null
+  );
 
-  const { data: documents = [], isLoading, error } = useQuery({
+  const {
+    data: documents = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["admin-essays"],
     queryFn: fetchAdminEssays,
   });
 
   const totalEssays = documents.length;
-  const verifiedEssays = documents.filter((doc) => doc.status === "verified").length;
-  const verifiedPercentage = totalEssays > 0 ? Math.round((verifiedEssays / totalEssays) * 100) : 0;
+  const verifiedEssays = documents.filter(
+    (doc) => doc.status === "verified"
+  ).length;
+  const verifiedPercentage =
+    totalEssays > 0 ? Math.round((verifiedEssays / totalEssays) * 100) : 0;
 
   if (isLoading) return <div className="p-4">Loading essays...</div>;
-  if (error) return <div className="p-4 text-red-500">Failed to load essays</div>;
+  if (error)
+    return <div className="p-4 text-red-500">Failed to load essays</div>;
 
   // Mock data for a single student's essays
   // const documents: Document[] = [
@@ -65,7 +92,7 @@ const Admin = () => {
   //       },
   //       {
   //         cid: "QmPjCxKPNRzv8HvUJQMpzLxEzBqkCa7MRnEp4XyYwZ123A",
-  //         timestamp: "2024-01-15T14:15:00Z", 
+  //         timestamp: "2024-01-15T14:15:00Z",
   //         wordCount: 1789,
   //         characters: 10876,
   //         size: "10.9 KB",
@@ -76,14 +103,14 @@ const Admin = () => {
   //         timestamp: "2024-01-15T14:00:00Z",
   //         wordCount: 1654,
   //         characters: 10234,
-  //         size: "10.2 KB", 
+  //         size: "10.2 KB",
   //         content: "Climate change represents one of the most pressing challenges of our time..."
   //       }
   //     ]
   //   },
   //   {
   //     id: "2",
-  //     title: "Analysis of Modern Literature", 
+  //     title: "Analysis of Modern Literature",
   //     createdAt: "2024-01-08T11:15:00Z",
   //     lastModified: "2024-01-14T16:45:00Z",
   //     totalVersions: 31,
@@ -101,7 +128,7 @@ const Admin = () => {
   //     ]
   //   },
   //   {
-  //     id: "3", 
+  //     id: "3",
   //     title: "Historical Perspectives on Democracy",
   //     createdAt: "2024-01-12T13:30:00Z",
   //     lastModified: "2024-01-13T10:20:00Z",
@@ -122,19 +149,21 @@ const Admin = () => {
   // ];
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();
     const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    );
 
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -155,7 +184,9 @@ const Admin = () => {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Admin View</h1>
-              <p className="text-muted-foreground">Student Essay Verification History</p>
+              <p className="text-muted-foreground">
+                Student Essay Verification History
+              </p>
             </div>
           </div>
 
@@ -164,10 +195,10 @@ const Admin = () => {
               <User className="w-3 h-3" />
               Student: John Doe
             </Badge>
-            <Badge variant="outline" className="flex items-center gap-1">
+            {/* <Badge variant="outline" className="flex items-center gap-1">
               <FileText className="w-3 h-3" />
               {documents.length} Essays
-            </Badge>
+            </Badge> */}
           </div>
         </div>
 
@@ -178,7 +209,9 @@ const Admin = () => {
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
                 <div>
-                  <p className="text-lg font-semibold text-foreground">{documents.length}</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {documents.length}
+                  </p>
                   <p className="text-xs text-muted-foreground">Total Essays</p>
                 </div>
               </div>
@@ -205,9 +238,11 @@ const Admin = () => {
                 <Clock className="w-5 h-5 text-warning" />
                 <div>
                   <p className="text-lg font-semibold text-foreground">
-                    {documents.filter(doc => doc.status === 'pending').length}
+                    {documents.filter((doc) => doc.status === "pending").length}
                   </p>
-                  <p className="text-xs text-muted-foreground">Pending Essays</p>
+                  <p className="text-xs text-muted-foreground">
+                    Pending Essays
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -218,7 +253,9 @@ const Admin = () => {
               <div className="flex items-center gap-2">
                 <Eye className="w-5 h-5 text-success" />
                 <div>
-                  <p className="text-lg font-semibold text-foreground">{verifiedPercentage}%</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {verifiedPercentage}%
+                  </p>
                   <p className="text-xs text-muted-foreground">Verified</p>
                 </div>
               </div>
@@ -234,11 +271,15 @@ const Admin = () => {
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{doc.title}</CardTitle>
                   <Badge
-                    variant={doc.status === 'verified' ? 'default' : 'secondary'}
+                    variant={
+                      doc.status === "verified" ? "default" : "secondary"
+                    }
                     className={
-                      doc.status === 'verified' ? 'bg-green-500 text-white' :
-                        doc.status === 'flagged' ? 'bg-red-500 text-white' :
-                          'bg-yellow-500 text-black'
+                      doc.status === "verified"
+                        ? "bg-green-500 text-white"
+                        : doc.status === "flagged"
+                        ? "bg-red-500 text-white"
+                        : "bg-yellow-500 text-black"
                     }
                   >
                     {doc.status}
@@ -252,7 +293,9 @@ const Admin = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Current Word Count</p>
-                    <p className="font-medium">{doc.currentWordCount.toLocaleString()}</p>
+                    <p className="font-medium">
+                      {doc.currentWordCount.toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">IPFS Versions</p>
@@ -278,7 +321,10 @@ const Admin = () => {
 
         {/* Version History Modal */}
         {selectedDocument && (
-          <Dialog open={!!selectedDocument} onOpenChange={() => setSelectedDocument(null)}>
+          <Dialog
+            open={!!selectedDocument}
+            onOpenChange={() => setSelectedDocument(null)}
+          >
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
@@ -294,26 +340,43 @@ const Admin = () => {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="font-mono text-xs">
+                            <Badge
+                              variant="outline"
+                              className="font-mono text-xs"
+                            >
                               <Hash className="w-3 h-3 mr-1" />
                               {version.cid.substring(0, 16)}...
                             </Badge>
-                            <Badge variant={index === 0 ? 'default' : 'secondary'}>
-                              {index === 0 ? 'Latest' : `Version ${selectedDocument.versions.length - index}`}
+                            <Badge
+                              variant={index === 0 ? "default" : "secondary"}
+                            >
+                              {index === 0
+                                ? "Latest"
+                                : `Version ${
+                                    selectedDocument.versions.length - index
+                                  }`}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
                               <p className="text-muted-foreground">Timestamp</p>
-                              <p className="font-medium">{formatTimeAgo(version.timestamp)}</p>
+                              <p className="font-medium">
+                                {formatTimeAgo(version.timestamp)}
+                              </p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Words</p>
-                              <p className="font-medium">{version.wordCount.toLocaleString()}</p>
+                              <p className="font-medium">
+                                {version.wordCount.toLocaleString()}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">Characters</p>
-                              <p className="font-medium">{version.characters.toLocaleString()}</p>
+                              <p className="text-muted-foreground">
+                                Characters
+                              </p>
+                              <p className="font-medium">
+                                {version.characters.toLocaleString()}
+                              </p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Size</p>

@@ -104,7 +104,7 @@ const Editor = () => {
     setCharacterCount(content.length);
   }, [content]);
 
-  // Auto-save every 10 seconds if content has changed
+  // Auto-save every few seconds if content has changed
   useEffect(() => {
     // Only auto-save if content has actually changed since last save
     if (content !== lastSavedContent) {

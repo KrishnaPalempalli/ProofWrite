@@ -5,4 +5,4 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const SAVE_TIMEOUT = 5000;
+export const SAVE_TIMEOUT = 1000;
