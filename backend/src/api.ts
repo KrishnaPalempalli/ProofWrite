@@ -75,7 +75,7 @@ router.post('/doc/upload', async (req: Request, res: Response) => {
       cid,
     })
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       message: 'failed to upload to pinata',
       error: `${error}`,
     })
